@@ -26,5 +26,14 @@ func main() {
 		specs.GRPC,
 		specs.Docker,
 		specs.DockerRabbit,
+		// Comparison specs for performance experiments
+		specs.Cmp_gRPC_Zipkin_Micro,
+		specs.Cmp_Thrift_Zipkin_Micro,
+		specs.Cmp_gRPC_NoZipkin_Micro,
+		specs.Cmp_Thrift_NoZipkin_Micro,
+		specs.Cmp_gRPC_Zipkin_Mono,
+		specs.Cmp_Thrift_Zipkin_Mono,
+		specs.Cmp_gRPC_NoZipkin_Mono,
+		specs.Cmp_Thrift_NoZipkin_Mono,
 	)
 }

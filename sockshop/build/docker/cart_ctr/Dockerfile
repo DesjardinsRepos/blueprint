@@ -16,7 +16,7 @@
 #  custom docker build commands provided by goproc.Process cart_proc
 #
 
-FROM golang:1.23-bookworm AS cart_proc
+FROM golang:1.24-bookworm AS cart_proc
 
 COPY ./cart_proc /src
 

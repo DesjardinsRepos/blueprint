@@ -16,7 +16,7 @@
 #  custom docker build commands provided by goproc.Process order_proc
 #
 
-FROM golang:1.23-bookworm AS order_proc
+FROM golang:1.24-bookworm AS order_proc
 
 COPY ./order_proc /src
 

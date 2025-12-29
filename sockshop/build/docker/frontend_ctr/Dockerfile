@@ -16,7 +16,7 @@
 #  custom docker build commands provided by goproc.Process frontend_proc
 #
 
-FROM golang:1.23-bookworm AS frontend_proc
+FROM golang:1.24-bookworm AS frontend_proc
 
 COPY ./frontend_proc /src
 

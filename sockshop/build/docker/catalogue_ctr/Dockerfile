@@ -16,7 +16,7 @@
 #  custom docker build commands provided by goproc.Process catalogue_proc
 #
 
-FROM golang:1.23-bookworm AS catalogue_proc
+FROM golang:1.24-bookworm AS catalogue_proc
 
 COPY ./catalogue_proc /src
 

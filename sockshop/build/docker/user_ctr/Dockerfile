@@ -16,7 +16,7 @@
 #  custom docker build commands provided by goproc.Process user_proc
 #
 
-FROM golang:1.23-bookworm AS user_proc
+FROM golang:1.24-bookworm AS user_proc
 
 COPY ./user_proc /src
 

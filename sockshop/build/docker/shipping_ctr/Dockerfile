@@ -16,7 +16,7 @@
 #  custom docker build commands provided by goproc.Process shipping_proc
 #
 
-FROM golang:1.23-bookworm AS shipping_proc
+FROM golang:1.24-bookworm AS shipping_proc
 
 COPY ./shipping_proc /src
 

@@ -16,7 +16,7 @@
 #  custom docker build commands provided by goproc.Process payment_proc
 #
 
-FROM golang:1.23-bookworm AS payment_proc
+FROM golang:1.24-bookworm AS payment_proc
 
 COPY ./payment_proc /src
 

@@ -59,6 +59,10 @@ for spec in "${SPECS[@]}"; do
     # Build and start containers
     echo "[3/5] Building containers..."
     cd $BUILD_DIR/docker
+    
+    # Clean up any existing containers first to avoid ContainerConfig errors
+    sudo docker-compose down -v 2>/dev/null || true
+    
     sudo docker-compose build
     
     echo "[4/5] Starting containers..."

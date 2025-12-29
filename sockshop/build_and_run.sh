@@ -6,6 +6,13 @@
 
 set -e
 
+# Detect OS for sed syntax
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    SED_INPLACE="sed -i ''"
+else
+    SED_INPLACE="sed -i"
+fi
+
 if [ -z "$1" ]; then
     echo "Usage: $0 <spec_name> [build_dir]"
     echo ""
@@ -40,21 +47,21 @@ cp .local.env docker/.env
 
 # Fix Dockerfiles - update Go version from 1.23 to 1.24
 echo "  - Fixing Dockerfiles..."
-find "$(pwd)/docker" -name Dockerfile -type f -exec sed -i '' 's/1\.23/1.24/g' {} \;
+find "$(pwd)/docker" -name Dockerfile -type f -exec $SED_INPLACE 's/1\.23/1.24/g' {} \;
 
 # Fix go.work files - update Go version from 1.23.1 to 1.24.0
 echo "  - Fixing go.work files..."
-find "$(pwd)" -name "go.work" -type f -exec sed -i '' 's/^go 1\.23\.1$/go 1.24.0/' {} \;
+find "$(pwd)" -name "go.work" -type f -exec $SED_INPLACE 's/^go 1\.23\.1$/go 1.24.0/' {} \;
 
 cd ..
 
 # Build containers
 echo "[3/5] Building containers..."
 cd $BUILD_DIR/docker
-docker-compose build
+sudo docker-compose build
 
 echo "[4/5] Starting containers..."
-docker-compose up -d
+sudo docker-compose up -d
 
 cd ../..
 
@@ -74,4 +81,4 @@ echo "  ./wlgen_proc/wlgen --duration 60 --rate 10"
 echo ""
 echo "To stop the containers:"
 echo "  cd $BUILD_DIR/docker"
-echo "  docker-compose down"
+echo "  sudo docker-compose down"

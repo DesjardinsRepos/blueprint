@@ -4,6 +4,13 @@
 
 set -e
 
+# Detect OS for sed syntax
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    SED_INPLACE="sed -i ''"
+else
+    SED_INPLACE="sed -i"
+fi
+
 DURATION=60
 RATE=50
 RESULTS_DIR="performance_results"
@@ -42,20 +49,20 @@ for spec in "${SPECS[@]}"; do
     cp .local.env docker/.env
     
     # Fix Dockerfiles - update Go version from 1.23 to 1.24
-    find "$(pwd)/docker" -name Dockerfile -type f -exec sed -i '' 's/1\.23/1.24/g' {} \;
+    find "$(pwd)/docker" -name Dockerfile -type f -exec $SED_INPLACE 's/1\.23/1.24/g' {} \;
     
     # Fix go.work files - update Go version from 1.23.1 to 1.24.0
-    find "$(pwd)" -name "go.work" -type f -exec sed -i '' 's/^go 1\.23\.1$/go 1.24.0/' {} \;
+    find "$(pwd)" -name "go.work" -type f -exec $SED_INPLACE 's/^go 1\.23\.1$/go 1.24.0/' {} \;
     
     cd ..
     
     # Build and start containers
     echo "[3/5] Building containers..."
     cd $BUILD_DIR/docker
-    docker-compose build
+    sudo docker-compose build
     
     echo "[4/5] Starting containers..."
-    docker-compose up -d
+    sudo docker-compose up -d
     cd ../..
     
     # Wait for services to be ready
@@ -75,7 +82,7 @@ for spec in "${SPECS[@]}"; do
     # Stop containers
     echo "Stopping containers..."
     cd $BUILD_DIR/docker
-    docker-compose down
+    sudo docker-compose down
     cd ../..
     
     echo "✓ Completed: $spec"

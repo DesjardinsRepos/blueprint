@@ -37,7 +37,7 @@ for spec in "${SPECS[@]}"; do
     echo "Testing: $spec"
     echo "========================================"
     
-    BUILD_DIR="build_$spec"
+    BUILD_DIR="$(pwd)/build_$spec"
     
     # Compile the spec
     echo "[1/5] Compiling..."
@@ -71,17 +71,52 @@ for spec in "${SPECS[@]}"; do
     
     # Wait for services to be ready
     echo "[5/5] Waiting for services to start..."
-    sleep 15
+    echo "Waiting for databases and backend services to initialize..."
+    sleep 30
+    
+    # Check if frontend is responding with 200 OK
+    echo "Checking if frontend service is ready..."
+    MAX_RETRIES=60
+    RETRY=0
+    while [ $RETRY -lt $MAX_RETRIES ]; do
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:12349/LoadCatalogue" 2>/dev/null || echo "000")
+        if [ "$HTTP_CODE" = "200" ]; then
+            echo "✓ Frontend is ready and returning 200 OK!"
+            break
+        fi
+        RETRY=$((RETRY + 1))
+        if [ $RETRY -eq $MAX_RETRIES ]; then
+            echo "✗ Frontend failed to return 200 after ${MAX_RETRIES} attempts (last status: $HTTP_CODE)"
+            echo "Checking container status..."
+            cd $BUILD_DIR/docker
+            sudo docker-compose ps
+            echo "\n=== Frontend logs ==="
+            sudo docker-compose logs frontend_ctr | tail -50
+            echo "\n=== Catalogue logs ==="
+            sudo docker-compose logs catalogue_ctr | tail -30
+            echo "\n=== User logs ==="
+            sudo docker-compose logs user_ctr | tail -30
+            cd $BUILD_DIR
+            echo "Skipping this configuration..."
+            cd $BUILD_DIR/docker
+            sudo docker-compose down 2>/dev/null || true
+            continue 2  # Skip to next spec
+        fi
+        if [ $((RETRY % 10)) -eq 0 ]; then
+            echo "  Waiting for frontend... (attempt $RETRY/$MAX_RETRIES, last status: $HTTP_CODE)"
+        fi
+        sleep 2
+    done
     
     # Build and run workload generator
     echo "Running workload..."
-    cd $BUILD_DIR/wlgen/wlgen_proc
-    go build -o wlgen ./wlgen_proc
+    cd $BUILD_DIR/wlgen/wlgen_proc/wlgen_proc
+    go build -o wlgen .
     cd ..
     set -a
-    source ../.local.env
-    ./wlgen_proc/wlgen --duration $DURATION --rate $RATE > "../../${RESULTS_DIR}/${spec}.txt" 2>&1
-    cd ../..
+    source ../../.local.env
+    ./wlgen_proc/wlgen --duration $DURATION --rate $RATE > "../../../${RESULTS_DIR}/${spec}.txt" 2>&1
+    cd ../../..
     
     # Stop containers
     echo "Stopping containers..."

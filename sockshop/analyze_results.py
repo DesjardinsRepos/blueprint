@@ -13,11 +13,18 @@ def parse_results(filepath):
         with open(filepath) as f:
             content = f.read()
         
+        # Look for results after the "=== Final Results ===" marker
+        final_section = content.split('=== Final Results ===')
+        if len(final_section) > 1:
+            final_content = final_section[-1]  # Get the last occurrence
+        else:
+            final_content = content  # Fallback to full content
+        
         # Look for the final results line
         match = re.search(
             r'\[(\d+\.\d+)s\] Requests: (\d+) \| Errors: (\d+) \| Throughput: ([\d.]+) req/s \| '
             r'Avg: ([\d.]+\w+) \| p50: ([\d.]+\w+) \| p95: ([\d.]+\w+) \| p99: ([\d.]+\w+)',
-            content
+            final_content
         )
         
         if match:

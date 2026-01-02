@@ -14,17 +14,18 @@ fi
 DURATION=60
 RATE=50
 RESULTS_DIR="performance_results"
+SOCKSHOP_DIR="$(pwd)"
 mkdir -p $RESULTS_DIR
 
 SPECS=(
     "cmp_grpc_zipkin_micro"
-    "cmp_thrift_zipkin_micro"
+    # "cmp_thrift_zipkin_micro"      # Skipped: No compatible Thrift version exists for Blueprint plugin
     "cmp_grpc_nozipkin_micro"
-    "cmp_thrift_nozipkin_micro"
+    # "cmp_thrift_nozipkin_micro"    # Skipped: Thrift incompatible
     "cmp_grpc_zipkin_mono"
-    "cmp_thrift_zipkin_mono"
+    # "cmp_thrift_zipkin_mono"       # Skipped: Thrift incompatible
     "cmp_grpc_nozipkin_mono"
-    "cmp_thrift_nozipkin_mono"
+    # "cmp_thrift_nozipkin_mono"     # Skipped: Thrift incompatible
 )
 
 echo "=== SockShop Performance Comparison ==="
@@ -37,7 +38,8 @@ for spec in "${SPECS[@]}"; do
     echo "Testing: $spec"
     echo "========================================"
     
-    BUILD_DIR="$(pwd)/build_$spec"
+    cd "$SOCKSHOP_DIR"
+    BUILD_DIR="build_$spec"
     
     # Compile the spec
     echo "[1/5] Compiling..."
@@ -76,10 +78,28 @@ for spec in "${SPECS[@]}"; do
     
     # Check if frontend is responding with 200 OK
     echo "Checking if frontend service is ready..."
+    
+    # Detect frontend port from docker-compose ps output
+    cd $BUILD_DIR/docker
+    # Both microservices and monolith use frontend_proc_ctr (due to goproc.Deploy naming)
+    FRONTEND_PORT=$(sudo docker-compose ps | grep frontend_proc_ctr | grep -oP '\d+(?=->2000/tcp)' | head -1)
+    FRONTEND_CTR="frontend_proc_ctr"
+    cd ../..
+    
+    if [ -z "$FRONTEND_PORT" ]; then
+        echo "✗ Could not automatically detect frontend port"
+        cd $BUILD_DIR/docker
+        sudo docker-compose ps
+        sudo docker-compose down 2>/dev/null || true
+        continue
+    fi
+    
+    echo "Detected frontend on port $FRONTEND_PORT"
+    
     MAX_RETRIES=60
     RETRY=0
     while [ $RETRY -lt $MAX_RETRIES ]; do
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:12349/LoadCatalogue" 2>/dev/null || echo "000")
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:$FRONTEND_PORT/LoadCatalogue" 2>/dev/null || echo "000")
         if [ "$HTTP_CODE" = "200" ]; then
             echo "✓ Frontend is ready and returning 200 OK!"
             break
@@ -90,15 +110,18 @@ for spec in "${SPECS[@]}"; do
             echo "Checking container status..."
             cd $BUILD_DIR/docker
             sudo docker-compose ps
-            echo "\n=== Frontend logs ==="
-            sudo docker-compose logs frontend_ctr | tail -50
-            echo "\n=== Catalogue logs ==="
-            sudo docker-compose logs catalogue_ctr | tail -30
-            echo "\n=== User logs ==="
-            sudo docker-compose logs user_ctr | tail -30
-            cd $BUILD_DIR
+            if [[ "$spec" == *"_mono" ]]; then
+                echo "\n=== Monolith logs ==="
+                sudo docker-compose logs $FRONTEND_CTR | tail -100
+            else
+                echo "\n=== Frontend logs ==="
+                sudo docker-compose logs frontend_ctr | tail -50
+                echo "\n=== Catalogue logs ==="
+                sudo docker-compose logs catalogue_ctr | tail -30
+                echo "\n=== User logs ==="
+                sudo docker-compose logs user_ctr | tail -30
+            fi
             echo "Skipping this configuration..."
-            cd $BUILD_DIR/docker
             sudo docker-compose down 2>/dev/null || true
             continue 2  # Skip to next spec
         fi
@@ -110,19 +133,17 @@ for spec in "${SPECS[@]}"; do
     
     # Build and run workload generator
     echo "Running workload..."
-    cd $BUILD_DIR/wlgen/wlgen_proc/wlgen_proc
+    cd $SOCKSHOP_DIR/$BUILD_DIR/wlgen/wlgen_proc/wlgen_proc
     go build -o wlgen .
     cd ..
     set -a
     source ../../.local.env
-    ./wlgen_proc/wlgen --duration $DURATION --rate $RATE > "../../../${RESULTS_DIR}/${spec}.txt" 2>&1
-    cd ../../..
+    ./wlgen_proc/wlgen --duration $DURATION --rate $RATE > "${SOCKSHOP_DIR}/${RESULTS_DIR}/${spec}.txt" 2>&1
     
     # Stop containers
     echo "Stopping containers..."
-    cd $BUILD_DIR/docker
+    cd $SOCKSHOP_DIR/$BUILD_DIR/docker
     sudo docker-compose down
-    cd ../..
     
     echo "✓ Completed: $spec"
     echo ""
@@ -134,6 +155,6 @@ echo ""
 echo "Summary of final results:"
 for spec in "${SPECS[@]}"; do
     echo "--- $spec ---"
-    grep "Final Results" -A 1 "${RESULTS_DIR}/${spec}.txt" 2>/dev/null || echo "No results found"
+    grep "=== Final Results ===" -A 1 "${RESULTS_DIR}/${spec}.txt" 2>/dev/null || echo "No results found"
     echo ""
 done

@@ -102,32 +102,39 @@ func makeComparisonSpec(useGRPC bool, useZipkin bool, useMicroservices bool) fun
 
 		// Modifiers that will be applied to all services
 		applyDefaults := func(serviceName string, useHTTP ...bool) {
-			// Golang-level modifiers that add functionality
-			retries.AddRetries(spec, serviceName, 3)
-			clientpool.Create(spec, serviceName, 10)
-			
-			// Add tracing if enabled
-			if useZipkin {
-				opentelemetry.Instrument(spec, serviceName, trace_collector)
-			}
-			
-			// Choose RPC framework
-			if len(useHTTP) > 0 && useHTTP[0] {
-				http.Deploy(spec, serviceName)
-			} else if useGRPC {
-				grpc.Deploy(spec, serviceName)
-			} else {
-				thrift.Deploy(spec, serviceName)
-			}
-
-			// For microservices, deploy to separate processes and containers
+			// For microservices, deploy to separate processes with RPC
 			if useMicroservices {
+				// Apply modifiers in correct order: tracing -> retries -> pooling -> RPC -> process -> container
+				
+				// Add tracing first (if enabled)
+				if useZipkin {
+					opentelemetry.Instrument(spec, serviceName, trace_collector)
+				}
+				
+				// RPC-related modifiers
+				retries.AddRetries(spec, serviceName, 3)
+				clientpool.Create(spec, serviceName, 10)
+				
+				// Choose RPC framework
+				if len(useHTTP) > 0 && useHTTP[0] {
+					http.Deploy(spec, serviceName)
+				} else if useGRPC {
+					grpc.Deploy(spec, serviceName)
+				} else {
+					thrift.Deploy(spec, serviceName)
+				}
+				
 				goproc.Deploy(spec, serviceName)
 				linuxcontainer.Deploy(spec, serviceName)
+				
+				// Add tests (each service can be tested independently in microservices)
+				gotests.Test(spec, serviceName)
+			} else {
+				// For monolith, only add tracing (services use direct calls)
+				if useZipkin {
+					opentelemetry.Instrument(spec, serviceName, trace_collector)
+				}
 			}
-
-			// Also add to tests
-			gotests.Test(spec, serviceName)
 		}
 
 		user_db := mongodb.Container(spec, "user_db")
@@ -161,16 +168,37 @@ func makeComparisonSpec(useGRPC bool, useZipkin bool, useMicroservices bool) fun
 		applyDefaults(catalogue_service)
 
 		frontend_service := workflow.Service[frontend.Frontend](spec, "frontend", user_service, catalogue_service, cart_service, order_service)
-		applyDefaults(frontend_service, true) // Frontend always uses HTTP
-
-		wlgen := workload.Generator[workloadgen.SimpleWorkload](spec, "wlgen", frontend_service)
-
-		// Return different artifacts based on architecture
+		
+		// Apply modifiers and deployment based on architecture
 		if useMicroservices {
-			return []string{"frontend_ctr", wlgen, "gotests"}, nil
+			// Microservices: frontend with tracing, HTTP, retries, pooling, separate process/container
+			// Apply in correct order
+			if useZipkin {
+				opentelemetry.Instrument(spec, frontend_service, trace_collector)
+			}
+			retries.AddRetries(spec, frontend_service, 3)
+			clientpool.Create(spec, frontend_service, 10)
+			http.Deploy(spec, frontend_service)
+			frontend_proc := goproc.Deploy(spec, frontend_service)
+			linuxcontainer.Deploy(spec, frontend_proc)
+			gotests.Test(spec, frontend_service)
+			
+			wlgen := workload.Generator[workloadgen.SimpleWorkload](spec, "wlgen", frontend_service)
+			return []string{frontend_proc + "_ctr", wlgen, "gotests"}, nil
 		} else {
-			// For monolith, everything runs in one container
-			return []string{"frontend_proc", wlgen, "gotests"}, nil
+			// Monolith: frontend with HTTP for external access, deployed as single process
+			// Internal services use direct calls (no RPC) since they have no Deploy modifiers
+			// Note: Dont apply tracing to frontend in monolith - causes conflicts with HTTP
+			// Backend services already have tracing from applyDefaults
+			http.Deploy(spec, frontend_service)
+			gotests.Test(spec, frontend_service)
+			
+			// Deploy to single process and container (goproc.Deploy bundles all dependencies)
+			frontend_proc := goproc.Deploy(spec, frontend_service)
+			linuxcontainer.Deploy(spec, frontend_proc)
+			
+			wlgen := workload.Generator[workloadgen.SimpleWorkload](spec, "wlgen", frontend_service)
+			return []string{frontend_proc + "_ctr", wlgen, "gotests"}, nil
 		}
 	}
 }

@@ -1,0 +1,50 @@
+=== Performance Comparison Results (Sorted by Throughput) ===
+
+Rank   Configuration                  Throughput      Avg Latency     p99 Latency     Errors    
+------------------------------------------------------------------------------------------------
+1      gRPC + NoTrace + Mono          50.00           2.718149ms      6.094828ms      0         
+2      gRPC + Zipkin + Mono           50.00           3.188911ms      7.322641ms      0         
+3      gRPC + NoTrace + Micro         50.00           3.392743ms      7.512515ms      0         
+4      gRPC + Zipkin + Micro          50.00           3.788049ms      10.712329ms     0         
+
+=== Detailed Results ===
+
+1. gRPC + NoTrace + Mono
+   Duration:    60.0s
+   Requests:    2999
+   Errors:      0
+   Throughput:  50.00 req/s
+   Avg Latency: 2.718149ms
+   p50 Latency: 2.551725ms
+   p95 Latency: 3.654121ms
+   p99 Latency: 6.094828ms
+
+2. gRPC + Zipkin + Mono
+   Duration:    60.0s
+   Requests:    2999
+   Errors:      0
+   Throughput:  50.00 req/s
+   Avg Latency: 3.188911ms
+   p50 Latency: 2.929313ms
+   p95 Latency: 4.638865ms
+   p99 Latency: 7.322641ms
+
+3. gRPC + NoTrace + Micro
+   Duration:    60.0s
+   Requests:    2999
+   Errors:      0
+   Throughput:  50.00 req/s
+   Avg Latency: 3.392743ms
+   p50 Latency: 3.243743ms
+   p95 Latency: 4.328622ms
+   p99 Latency: 7.512515ms
+
+4. gRPC + Zipkin + Micro
+   Duration:    60.0s
+   Requests:    2999
+   Errors:      0
+   Throughput:  50.00 req/s
+   Avg Latency: 3.788049ms
+   p50 Latency: 3.510357ms
+   p95 Latency: 5.36913ms
+   p99 Latency: 10.712329ms

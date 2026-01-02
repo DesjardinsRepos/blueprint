@@ -74,7 +74,7 @@ def main():
         return
     
     # Sort by throughput (descending)
-    sorted_results = sorted(results.items(), key=lambda x: x[1]['throughput'], reverse=True)
+    sorted_results = sorted(results.items(), key=lambda x: x[1]['avg_latency'], reverse=False)
     
     # Print comparison table
     print("\n=== Performance Comparison Results (Sorted by Throughput) ===\n")

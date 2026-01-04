@@ -19,13 +19,11 @@ mkdir -p $RESULTS_DIR
 
 SPECS=(
     "cmp_grpc_zipkin_micro"
-    # "cmp_thrift_zipkin_micro"      # Skipped: No compatible Thrift version exists for Blueprint plugin
+    "cmp_thrift_zipkin_micro"
     "cmp_grpc_nozipkin_micro"
-    # "cmp_thrift_nozipkin_micro"    # Skipped: Thrift incompatible
-    "cmp_grpc_zipkin_mono"
-    # "cmp_thrift_zipkin_mono"       # Skipped: Thrift incompatible
-    "cmp_grpc_nozipkin_mono"
-    # "cmp_thrift_nozipkin_mono"     # Skipped: Thrift incompatible
+    "cmp_thrift_nozipkin_micro"
+    "cmp_zipkin_mono"
+    "cmp_nozipkin_mono"
 )
 
 echo "=== SockShop Performance Comparison ==="
@@ -40,6 +38,12 @@ for spec in "${SPECS[@]}"; do
     
     cd "$SOCKSHOP_DIR"
     BUILD_DIR="build_$spec"
+    
+    # Clean up any existing build directory to ensure fresh compilation
+    if [ -d "$BUILD_DIR" ]; then
+        echo "[0/5] Removing old build directory..."
+        rm -rf "$BUILD_DIR"
+    fi
     
     # Compile the spec
     echo "[1/5] Compiling..."

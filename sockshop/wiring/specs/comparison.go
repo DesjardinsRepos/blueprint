@@ -63,33 +63,20 @@ var Cmp_Thrift_NoZipkin_Micro = cmdbuilder.SpecOption{
 	Build:       makeComparisonSpec(false, false, true),
 }
 
-// 5. gRPC + Zipkin + Monolith
-var Cmp_gRPC_Zipkin_Mono = cmdbuilder.SpecOption{
-	Name:        "cmp_grpc_zipkin_mono",
-	Description: "Monolith with gRPC and Zipkin tracing",
+// 5. Zipkin + Monolith
+var Cmp_Zipkin_Mono = cmdbuilder.SpecOption{
+	Name:        "cmp_zipkin_mono",
+	Description: "Monolith with Zipkin tracing",
 	Build:       makeComparisonSpec(true, true, false),
 }
 
-// 6. Thrift + Zipkin + Monolith
-var Cmp_Thrift_Zipkin_Mono = cmdbuilder.SpecOption{
-	Name:        "cmp_thrift_zipkin_mono",
-	Description: "Monolith with Thrift and Zipkin tracing",
-	Build:       makeComparisonSpec(false, true, false),
-}
-
-// 7. gRPC + NoZipkin + Monolith
-var Cmp_gRPC_NoZipkin_Mono = cmdbuilder.SpecOption{
-	Name:        "cmp_grpc_nozipkin_mono",
-	Description: "Monolith with gRPC, no tracing",
+// 7. NoZipkin + Monolith
+var Cmp_NoZipkin_Mono = cmdbuilder.SpecOption{
+	Name:        "cmp_nozipkin_mono",
+	Description: "Monolith with no tracing",
 	Build:       makeComparisonSpec(true, false, false),
 }
 
-// 8. Thrift + NoZipkin + Monolith
-var Cmp_Thrift_NoZipkin_Mono = cmdbuilder.SpecOption{
-	Name:        "cmp_thrift_nozipkin_mono",
-	Description: "Monolith with Thrift, no tracing",
-	Build:       makeComparisonSpec(false, false, false),
-}
 
 // Helper function to generate comparison specs
 func makeComparisonSpec(useGRPC bool, useZipkin bool, useMicroservices bool) func(spec wiring.WiringSpec) ([]string, error) {

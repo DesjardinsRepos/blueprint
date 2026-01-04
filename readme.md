@@ -1,5 +1,6 @@
 ### Ubuntu workflow
 
+    # Clone and install prerequisites
     git clone https://github.com/Blueprint-uServices/blueprint
     cd blueprint/examples/sockshop/
     sudo apt update && sudo apt upgrade -y
@@ -8,6 +9,14 @@
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
     export PATH="$PATH:$HOME/go/bin"
 
+    # Fix the thrift plugin
+    cd ~/blueprint/plugins/thrift/thriftcodegen
+    cp blueprint/thrift_plugin_fixes/clientgen.go clientgen.go
+    cp blueprint/thrift_plugin_fixes/marshallgen.go marshallgen.go
+    cp blueprint/thrift_plugin_fixes/servergen.go servergen.go
+    cp blueprint/thrift_plugin_fixes/thriftgen.go thriftgen.go
+
+    # Get the evaluation scripts, experiemental setups and custom workload generator
     cd ~/blueprint/examples/sockshop/
     git clone https://github.com/DesjardinsRepos/blueprint
     cp blueprint/sockshop/build_and_run.sh build_and_run.sh
@@ -20,5 +29,6 @@
     cp blueprint/sockshop/wiring/main.go wiring/main.go
     cp blueprint/sockshop/workload/workloadgen/workload.go workload/workloadgen/workload.go
 
+    # Execute the experiments
     ./run_comparison.sh
     ./analyze_results.py

@@ -2,10 +2,13 @@
 
 Rank   Configuration                  Throughput      Avg Latency     p99 Latency     Errors    
 ------------------------------------------------------------------------------------------------
-1      gRPC + NoTrace + Mono          50.00           2.718149ms      6.094828ms      0         
-2      gRPC + Zipkin + Mono           50.00           3.188911ms      7.322641ms      0         
+1      NoTrace + Mono                 50.00           2.718149ms      6.094828ms      0         
+2      Zipkin + Mono                  50.00           3.188911ms      7.322641ms      0         
 3      gRPC + NoTrace + Micro         50.00           3.392743ms      7.512515ms      0         
 4      gRPC + Zipkin + Micro          50.00           3.788049ms      10.712329ms     0         
+5      Thrift + NoTrace + Micro       50.00           11.706806ms     23.211666ms     0         
+6      Thrift + Zipkin + Micro        50.00           13.513519ms     40.531798ms     0         
+
 
 === Detailed Results ===
 
@@ -48,3 +51,23 @@ Rank   Configuration                  Throughput      Avg Latency     p99 Latenc
    p50 Latency: 3.510357ms
    p95 Latency: 5.36913ms
    p99 Latency: 10.712329ms
+
+1. Thrift + NoTrace + Micro
+   Duration:    60.0s
+   Requests:    2998
+   Errors:      0
+   Throughput:  50.00 req/s
+   Avg Latency: 11.706806ms
+   p50 Latency: 11.589741ms
+   p95 Latency: 15.101033ms
+   p99 Latency: 23.211666ms
+
+2. Thrift + Zipkin + Micro
+   Duration:    60.0s
+   Requests:    2999
+   Errors:      0
+   Throughput:  50.00 req/s
+   Avg Latency: 13.513519ms
+   p50 Latency: 12.427387ms
+   p95 Latency: 22.122727ms
+   p99 Latency: 40.531798ms

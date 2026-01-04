@@ -12,7 +12,7 @@ Rank   Configuration                  Throughput      Avg Latency     p99 Latenc
 
 === Detailed Results ===
 
-1. gRPC + NoTrace + Mono
+1. NoTrace + Mono
    Duration:    60.0s
    Requests:    2999
    Errors:      0
@@ -22,7 +22,7 @@ Rank   Configuration                  Throughput      Avg Latency     p99 Latenc
    p95 Latency: 3.654121ms
    p99 Latency: 6.094828ms
 
-2. gRPC + Zipkin + Mono
+2. Zipkin + Mono
    Duration:    60.0s
    Requests:    2999
    Errors:      0
@@ -52,7 +52,7 @@ Rank   Configuration                  Throughput      Avg Latency     p99 Latenc
    p95 Latency: 5.36913ms
    p99 Latency: 10.712329ms
 
-1. Thrift + NoTrace + Micro
+5. Thrift + NoTrace + Micro
    Duration:    60.0s
    Requests:    2998
    Errors:      0
@@ -62,7 +62,7 @@ Rank   Configuration                  Throughput      Avg Latency     p99 Latenc
    p95 Latency: 15.101033ms
    p99 Latency: 23.211666ms
 
-2. Thrift + Zipkin + Micro
+6. Thrift + Zipkin + Micro
    Duration:    60.0s
    Requests:    2999
    Errors:      0
@@ -71,3 +71,12 @@ Rank   Configuration                  Throughput      Avg Latency     p99 Latenc
    p50 Latency: 12.427387ms
    p95 Latency: 22.122727ms
    p99 Latency: 40.531798ms
+
+---------------------------------------------------------
+LoC Changes
+
+   not using Zipkin -> using Zipkin:   -0 +2
+   microservices -> monolith:          -18 +6
+   gRPC -> Thrift:                     -1 +1
+
+   Reconfigure time:                   11:09.49

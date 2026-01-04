@@ -89,14 +89,15 @@ func makeComparisonSpec(useGRPC bool, useZipkin bool, useMicroservices bool) fun
 
 		// Modifiers that will be applied to all services
 		applyDefaults := func(serviceName string, useHTTP ...bool) {
+
+			// Add tracing first (if enabled)
+			if useZipkin {
+				opentelemetry.Instrument(spec, serviceName, trace_collector)
+			}
+
 			// For microservices, deploy to separate processes with RPC
 			if useMicroservices {
 				// Apply modifiers in correct order: tracing -> retries -> pooling -> RPC -> process -> container
-				
-				// Add tracing first (if enabled)
-				if useZipkin {
-					opentelemetry.Instrument(spec, serviceName, trace_collector)
-				}
 				
 				// RPC-related modifiers
 				retries.AddRetries(spec, serviceName, 3)
@@ -116,11 +117,6 @@ func makeComparisonSpec(useGRPC bool, useZipkin bool, useMicroservices bool) fun
 				
 				// Add tests (each service can be tested independently in microservices)
 				gotests.Test(spec, serviceName)
-			} else {
-				// For monolith, only add tracing (services use direct calls)
-				if useZipkin {
-					opentelemetry.Instrument(spec, serviceName, trace_collector)
-				}
 			}
 		}
 

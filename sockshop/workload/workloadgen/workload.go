@@ -33,7 +33,8 @@ type workloadGen struct {
 
 var myarg = flag.Int("myarg", 12345, "help message for myarg")
 var duration = flag.Int("duration", 60, "duration of workload in seconds")
-var rate = flag.Int("rate", 10, "requests per second")
+var workers = flag.Int("workers", 100, "number of concurrent workers (0 for rate-limited mode)")
+var rate = flag.Int("rate", 0, "requests per second (only used if workers=0)")
 
 func NewSimpleWorkload(ctx context.Context, frontend frontend.Frontend) (SimpleWorkload, error) {
 	return &workloadGen{
@@ -49,12 +50,69 @@ func (s *workloadGen) Run(ctx context.Context) error {
 		return err
 	}
 	
-	fmt.Printf("Starting workload generator:\n")
-	fmt.Printf("  Duration: %d seconds\n", *duration)
-	fmt.Printf("  Rate: %d req/s\n", *rate)
-	fmt.Printf("  MyArg: %v\n", *myarg)
-	fmt.Println()
+	if *workers > 0 {
+		fmt.Printf("Starting workload generator (Max Throughput Mode):\n")
+		fmt.Printf("  Duration: %d seconds\n", *duration)
+		fmt.Printf("  Workers: %d\n", *workers)
+		fmt.Println()
+		return s.runMaxThroughput(ctx)
+	} else {
+		fmt.Printf("Starting workload generator (Rate Limited Mode):\n")
+		fmt.Printf("  Duration: %d seconds\n", *duration)
+		fmt.Printf("  Rate: %d req/s\n", *rate)
+		fmt.Println()
+		return s.runRateLimited(ctx)
+	}
+}
+
+func (s *workloadGen) runMaxThroughput(ctx context.Context) error {
+	startTime := time.Now()
+	endTime := startTime.Add(time.Duration(*duration) * time.Second)
 	
+	// Print stats every 5 seconds
+	statsTicker := time.NewTicker(5 * time.Second)
+	defer statsTicker.Stop()
+	
+	// Create a context that will be cancelled after duration
+	workCtx, cancel := context.WithDeadline(ctx, endTime)
+	defer cancel()
+	
+	// Start worker goroutines
+	var wg sync.WaitGroup
+	for i := 0; i < *workers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for {
+				select {
+				case <-workCtx.Done():
+					return
+				default:
+					s.executeRequest(workCtx)
+				}
+			}
+		}()
+	}
+	
+	// Print stats periodically
+	go func() {
+		for {
+			select {
+			case <-workCtx.Done():
+				return
+			case <-statsTicker.C:
+				s.printStats(startTime)
+			}
+		}
+	}()
+	
+	// Wait for all workers to finish
+	wg.Wait()
+	s.printFinalStats(startTime)
+	return nil
+}
+
+func (s *workloadGen) runRateLimited(ctx context.Context) error {
 	startTime := time.Now()
 	endTime := startTime.Add(time.Duration(*duration) * time.Second)
 	ticker := time.NewTicker(time.Second / time.Duration(*rate))

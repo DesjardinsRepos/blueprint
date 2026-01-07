@@ -22,6 +22,11 @@ Rank   Configuration                  Throughput      Avg Latency     p99 Latenc
    p95 Latency: 3.654121ms
    p99 Latency: 6.094828ms
 
+   [60.0s] Requests: 33239 | Errors: 503 | Throughput: 553.9 req/s | Avg: 272.921466ms | p50: 236.742615ms | p95: 668.04729ms | p99: 981.502714ms
+
+   === Final Results ===
+   [60.1s] Requests: 33389 | Errors: 503 | Throughput: 555.4 req/s | Avg: 273.451112ms | p50: 237.141438ms | p95: 666.342417ms | p99: 981.280846ms
+
 2. Zipkin + Mono
    Duration:    60.0s
    Requests:    2999
@@ -31,6 +36,11 @@ Rank   Configuration                  Throughput      Avg Latency     p99 Latenc
    p50 Latency: 2.929313ms
    p95 Latency: 4.638865ms
    p99 Latency: 7.322641ms
+
+   [60.0s] Requests: 29058 | Errors: 735 | Throughput: 484.3 req/s | Avg: 315.789722ms | p50: 268.721364ms | p95: 776.607598ms | p99: 1.154723331s
+
+   === Final Results ===
+   [60.2s] Requests: 29208 | Errors: 735 | Throughput: 485.0 req/s | Avg: 315.845759ms | p50: 268.913536ms | p95: 776.479149ms | p99: 1.154288637s
 
 3. gRPC + NoTrace + Micro
    Duration:    60.0s
@@ -42,6 +52,11 @@ Rank   Configuration                  Throughput      Avg Latency     p99 Latenc
    p95 Latency: 4.328622ms
    p99 Latency: 7.512515ms
 
+   [60.0s] Requests: 27862 | Errors: 140 | Throughput: 464.4 req/s | Avg: 323.697271ms | p50: 323.479849ms | p95: 354.596171ms | p99: 370.129072ms
+
+   === Final Results ===
+   [60.0s] Requests: 27872 | Errors: 140 | Throughput: 464.4 req/s | Avg: 323.703362ms | p50: 323.497838ms | p95: 354.621684ms | p99: 370.129072ms
+
 4. gRPC + Zipkin + Micro
    Duration:    60.0s
    Requests:    2999
@@ -51,6 +66,12 @@ Rank   Configuration                  Throughput      Avg Latency     p99 Latenc
    p50 Latency: 3.510357ms
    p95 Latency: 5.36913ms
    p99 Latency: 10.712329ms
+
+   [60.0s] Requests: 22074 | Errors: 0 | Throughput: 367.9 req/s | Avg: 405.903341ms | p50: 394.956375ms | p95: 523.145335ms | p99: 571.689076ms
+
+   === Final Results ===
+   [60.0s] Requests: 22224 | Errors: 140 | Throughput: 370.2 req/s | Avg: 405.951624ms | p50: 394.987143ms | p95: 523.170432ms | p99: 571.689076ms
+
 
 5. Thrift + NoTrace + Micro
    Duration:    60.0s
@@ -62,6 +83,11 @@ Rank   Configuration                  Throughput      Avg Latency     p99 Latenc
    p95 Latency: 15.101033ms
    p99 Latency: 23.211666ms
 
+   [60.0s] Requests: 6173 | Errors: 140 | Throughput: 102.9 req/s | Avg: 1.473349936s | p50: 1.485377795s | p95: 1.671908815s | p99: 1.73318448s
+
+   === Final Results ===
+   [60.1s] Requests: 6183 | Errors: 140 | Throughput: 102.9 req/s | Avg: 1.473439831s | p50: 1.485386598s | p95: 1.671527574s | p99: 1.73318448s
+
 6. Thrift + Zipkin + Micro
    Duration:    60.0s
    Requests:    2999
@@ -71,6 +97,11 @@ Rank   Configuration                  Throughput      Avg Latency     p99 Latenc
    p50 Latency: 12.427387ms
    p95 Latency: 22.122727ms
    p99 Latency: 40.531798ms
+
+   [60.0s] Requests: 6130 | Errors: 0 | Throughput: 102.2 req/s | Avg: 1.451196392s | p50: 1.463010367s | p95: 1.662916416s | p99: 1.80826174s
+
+   === Final Results ===
+   [60.1s] Requests: 6280 | Errors: 140 | Throughput: 104.5 req/s | Avg: 1.451308263s | p50: 1.463136099s | p95: 1.662916416s | p99: 1.80826174s
 
 ---------------------------------------------------------
 LoC Changes
